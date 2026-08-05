@@ -276,6 +276,39 @@ def save_order(excel_mgr, customers, orders, form, customer_id=None, order_id=No
     return customer_id, order_id
 
 
+def save_order_for_customer(excel_mgr, customers, orders, form, customer_id, order_id=None):
+    """Save an order for an existing customer without changing that profile."""
+    if not customer_id or not _customer_exists(customers, customer_id):
+        raise ValueError("Select an existing customer before saving an order.")
+
+    errors = validate(form)
+    if errors:
+        raise ValueError("\n".join(errors))
+
+    customer = next(c for c in customers if str(c.get("id") or "") == customer_id)
+    customer_name = str(customer.get("name") or form.get("name") or "").strip()
+    if not order_id:
+        order_id = next_id(orders, "ORD", 101)
+
+    ord_rows = [r for r in orders if str(r.get("id") or "") != order_id]
+    ord_rows.append(order_row(form, order_id, customer_id, customer_name))
+    excel_mgr.write_all_records("orders.xlsx", ORD_HEADERS,
+                                [[r.get(h, "") for h in ORD_HEADERS] for r in ord_rows])
+
+    meas_rows = excel_mgr.read_records("measurements.xlsx", MEAS_HEADERS)
+    meas_rows = [r for r in meas_rows if str(r.get("order_id") or "") != order_id]
+    meas_rows.append(measurement_row(order_id, form))
+    excel_mgr.write_all_records("measurements.xlsx", MEAS_HEADERS,
+                                [[r.get(h, "") for h in MEAS_HEADERS] for r in meas_rows])
+
+    style_rows = excel_mgr.read_records("styles.xlsx", STYLE_HEADERS)
+    style_rows = [r for r in style_rows if str(r.get("order_id") or "") != order_id]
+    style_rows.append(style_row(order_id, form))
+    excel_mgr.write_all_records("styles.xlsx", STYLE_HEADERS,
+                                [[r.get(h, "") for h in STYLE_HEADERS] for r in style_rows])
+    return customer_id, order_id
+
+
 # ---------------------------------------------------------------------------
 # Receipt
 # ---------------------------------------------------------------------------
