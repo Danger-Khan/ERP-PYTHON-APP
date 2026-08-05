@@ -161,7 +161,7 @@ class OrderCardView(tk.Frame):
         # --- Header ---
         hdr = tk.Frame(body, bg=self.colors["bg_body"])
         hdr.pack(fill=tk.X, padx=20, pady=(14, 4))
-        self.lbl_title = tk.Label(hdr, text="New Customer", font=(self.font, 18, "bold"),
+        self.lbl_title = tk.Label(hdr, text="New Order", font=(self.font, 18, "bold"),
                                   bg=self.colors["bg_body"], fg=self.colors["text_main"])
         self.lbl_title.pack(anchor="w")
         self.lbl_sub = tk.Label(hdr, text="Digital order card — mirroring the JTQ paper slip",
@@ -174,12 +174,18 @@ class OrderCardView(tk.Frame):
         grid = tk.Frame(card, bg=self.colors["bg_card"])
         grid.pack(fill=tk.X)
 
-        self.ent_customer_id = self._row_entry(grid, 0, "Customer ID", read_only=True)
-        self.ent_name = self._row_entry(grid, 1, "Name *")
-        self.ent_phone = self._row_entry(grid, 2, "Mobile Number *")
-        self.ent_date = self._row_entry(grid, 3, "Date")
-        self.ent_address = self._row_entry(grid, 4, "Address")
-        self.ent_tailor = self._row_entry(grid, 5, "Assign Tailor")
+        tk.Label(grid, text="Registered Customer *", font=(self.font, 8, "bold"),
+                 bg=self.colors["bg_card"], fg=self.colors["text_muted"]).grid(
+                     row=0, column=0, sticky="w", padx=(0, 10), pady=4)
+        self.cbo_customer = ttk.Combobox(grid, state="readonly", width=28)
+        self.cbo_customer.grid(row=0, column=1, sticky="ew", pady=4)
+        self.cbo_customer.bind("<<ComboboxSelected>>", self.on_customer_selected)
+        self.ent_customer_id = self._row_entry(grid, 1, "Customer ID", read_only=True)
+        self.ent_name = self._row_entry(grid, 2, "Name", read_only=True)
+        self.ent_phone = self._row_entry(grid, 3, "Mobile Number", read_only=True)
+        self.ent_date = self._row_entry(grid, 4, "Date")
+        self.ent_address = self._row_entry(grid, 5, "Address", read_only=True)
+        self.ent_tailor = self._row_entry(grid, 6, "Assign Tailor")
 
         row_status = tk.Frame(card, bg=self.colors["bg_card"])
         row_status.pack(fill=tk.X, pady=(4, 0))
@@ -280,7 +286,6 @@ class OrderCardView(tk.Frame):
         # --- Section 8: Action buttons ---
         actions = tk.Frame(body, bg=self.colors["bg_body"])
         actions.pack(fill=tk.X, padx=20, pady=(16, 24))
-        self.btn_save_customer = self._action_button(actions, "Save Customer", self.primary, self.on_save_customer)
         self.btn_save_order = self._action_button(actions, "Save Order", self.success, self.on_save_order)
         self.btn_print = self._action_button(actions, "Print Receipt", self.warning, self.on_print_receipt)
         self.btn_clear = self._action_button(actions, "Clear Form", self.danger, self.on_clear)
@@ -319,20 +324,21 @@ class OrderCardView(tk.Frame):
 
     # -------------------------------------------------------- form behavior
     def reset_form(self):
-        """Clears every field and auto-generates the next customer ID."""
+        """Clears order-only fields; customers are selected from Customer Hub."""
         from datetime import datetime
         today = datetime.now().strftime("%Y-%m-%d")
 
-        self.ent_customer_id.configure(state="normal")
-        self.ent_customer_id.delete(0, tk.END)
-        self.ent_customer_id.insert(0, svc.next_id(self.app.customers, "C", 101))
-        self.ent_customer_id.configure(state="readonly")
+        customers = [f"{c.get('id', '')} - {c.get('name', '')}" for c in self.app.customers
+                     if str(c.get('id') or '').strip() and str(c.get('name') or '').strip()]
+        self.cbo_customer["values"] = customers
+        self.cbo_customer.set("")
+        self._set_entry(self.ent_customer_id, "")
 
-        self.ent_name.delete(0, tk.END)
-        self.ent_phone.delete(0, tk.END)
+        self._set_entry(self.ent_name, "")
+        self._set_entry(self.ent_phone, "")
         self.ent_date.delete(0, tk.END)
         self.ent_date.insert(0, today)
-        self.ent_address.delete(0, tk.END)
+        self._set_entry(self.ent_address, "")
         self.ent_tailor.delete(0, tk.END)
         self.cbo_status.current(0)
 
@@ -354,6 +360,25 @@ class OrderCardView(tk.Frame):
         self.ent_total.delete(0, tk.END)
         self.ent_advance.delete(0, tk.END)
         self.update_remaining()
+
+    def _set_entry(self, entry, value):
+        state = str(entry.cget("state"))
+        if state == "readonly":
+            entry.configure(state="normal")
+        entry.delete(0, tk.END)
+        entry.insert(0, value)
+        if state == "readonly":
+            entry.configure(state="readonly")
+
+    def on_customer_selected(self, event=None):
+        customer_id = self.cbo_customer.get().split(" - ", 1)[0]
+        customer = next((c for c in self.app.customers if str(c.get("id") or "") == customer_id), None)
+        if not customer:
+            return
+        self._set_entry(self.ent_customer_id, customer_id)
+        self._set_entry(self.ent_name, str(customer.get("name") or ""))
+        self._set_entry(self.ent_phone, str(customer.get("phone") or ""))
+        self._set_entry(self.ent_address, str(customer.get("address") or ""))
 
     def update_remaining(self):
         total = svc.clean_num(self.ent_total.get())
@@ -390,34 +415,13 @@ class OrderCardView(tk.Frame):
         return not errors
 
     # ----------------------------------------------------------- actions
-    def on_save_customer(self):
-        """Persists the customer profile card only (with legacy measurements)."""
-        form = self.collect_form()
-        name = str(form.get("name") or "").strip()
-        phone = str(form.get("phone") or "").strip()
-        if not name or not phone:
-            messagebox.showerror("Validation Error",
-                                 "Customer name and mobile number are required.",
-                                 parent=self)
-            return
-        customer_id = self.ent_customer_id.get()
-        try:
-            svc.save_customer(self.app.excel_mgr, self.app.customers, form, customer_id)
-        except Exception as e:
-            messagebox.showerror("Save Error", str(e), parent=self)
-            return
-        self.app.reload_all_data()
-        messagebox.showinfo("Saved",
-                            f"Customer {customer_id} saved successfully.", parent=self)
-        self.reset_form()
-
     def on_save_order(self):
         """Persists customer + order + measurements + styles together."""
         form = self.collect_form()
         if not self.validate_and_show(form):
             return
         try:
-            customer_id, order_id = svc.save_order(
+            customer_id, order_id = svc.save_order_for_customer(
                 self.app.excel_mgr, self.app.customers, self.app.orders, form,
                 customer_id=self.ent_customer_id.get())
         except ValueError as e:
@@ -439,7 +443,7 @@ class OrderCardView(tk.Frame):
         if not self.validate_and_show(form):
             return
         try:
-            customer_id, order_id = svc.save_order(
+            customer_id, order_id = svc.save_order_for_customer(
                 self.app.excel_mgr, self.app.customers, self.app.orders, form,
                 customer_id=self.ent_customer_id.get())
         except Exception as e:
