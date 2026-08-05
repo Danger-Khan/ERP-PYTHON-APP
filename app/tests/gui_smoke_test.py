@@ -19,7 +19,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 APP_DIR = ROOT.parent
-sys.path.insert(0, str(APP_DIR))
+PROJECT_ROOT = APP_DIR.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.insert(1, str(APP_DIR))
 
 from app import main_gui as gui
 
@@ -103,7 +105,7 @@ def run_gui_smoke_test():
         app.cbo_lang.set("English \U0001F1EC\U0001F1E7")
         app.on_language_change(None)
         app.update()
-        check("english nav restored", app.nav_buttons["dashboard"][0].cget("text") == "📊 Dashboard")
+        check("english nav restored", app.nav_buttons["dashboard"][0].cget("text") == "Dashboard")
 
         # --- Modals open without error (grab may fail on unmapped windows; tolerated) ---
         def open_and_destroy(method, name):
