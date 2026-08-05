@@ -7,7 +7,7 @@ LANGUAGE_OPTIONS = [
 ]
 
 ORDER_CARD_TRANSLATIONS = {
-    "en": ("New Customer", "Digital order card — mirroring the JTQ paper slip"),
+    "en": ("New Order", "Create an order for a registered customer"),
     "ur": ("نیا گاہک", "آرڈر کارڈ — کاغذی سلیپ کی ڈیجیٹل شکل"),
     "ps": ("نوی پیرېدونکی", "د فرمایش کارت — د JTQ کاغذي سلیپ دیجیتل بڼه"),
     "zh": ("新客户", "数字订单卡 — 镜像 JTQ 纸质单"),
@@ -35,6 +35,15 @@ TRANSLATIONS = {
         "admin_sub": "Theme, language, garments & employee roles",
         "language_label": "🌐 Language / زبان",
         "theme_label": "🛠️ System Theme",
+        "btn_add_cust": "➕ Add Customer",
+        "btn_new_card": "🖨️ New Order",
+        "btn_assign_task": "🛠️ Assign Task",
+        "btn_add_emp": "➕ Add Staff",
+        "tbl_ord_id": "ID",
+        "tbl_cust": "Customer",
+        "tbl_garment": "Garment",
+        "tbl_status": "Status",
+        "tbl_tailor": "Tailor",
     },
     "ur": {
         "nav_dash": "ڈیش بورڈ",
