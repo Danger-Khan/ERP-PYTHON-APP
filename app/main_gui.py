@@ -4,6 +4,10 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from datetime import datetime
 from excel_manager import ExcelManager, clean_val
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import Lock
+import gc
+import weakref
 
 try:
     from services import order_card_service as card_svc
@@ -43,6 +47,8 @@ FONT_FAMILY = "SF Pro Text" if sys.platform == "darwin" else "Segoe UI"
 
 
 class CircularDonutChart(tk.Canvas):
+    __slots__ = ('size', 'ring_color', 'bg_color', 'stroke_width', 'percentage')
+    
     def __init__(self, parent, size=75, ring_color=PRIMARY, bg_color="#E5E5EA", stroke_width=8, theme_colors=None, **kwargs):
         bg = theme_colors["bg_chart"] if theme_colors else "#FAFAFC"
         super().__init__(parent, width=size, height=size, bg=bg, highlightthickness=0, **kwargs)
@@ -158,11 +164,29 @@ class AtelierERPApp(tk.Tk):
         self.auto_refresh_loop()
 
     def reload_all_data(self):
-        self.customers = self.excel_mgr.read_records("customers.xlsx", self.cust_headers)
-        self.employees = self.excel_mgr.read_records("employees.xlsx", self.emp_headers)
-        self.orders = self.excel_mgr.read_records("orders.xlsx", self.ord_headers)
+        """Load all data in parallel for better performance."""
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            # Submit all loading tasks in parallel
+            cust_future = executor.submit(self.excel_mgr.read_records, "customers.xlsx", self.cust_headers)
+            emp_future = executor.submit(self.excel_mgr.read_records, "employees.xlsx", self.emp_headers)
+            ord_future = executor.submit(self.excel_mgr.read_records, "orders.xlsx", self.ord_headers)
+            
+            # Collect results as they complete
+            for future in as_completed([cust_future, emp_future, ord_future]):
+                try:
+                    future.result()
+                except Exception as e:
+                    pass
+        
+        # Assign results (they complete quickly)
+        self.customers = cust_future.result() if cust_future.done() else []
+        self.employees = emp_future.result() if emp_future.done() else []
+        self.orders = ord_future.result() if ord_future.done() else []
         self.garment_types = self.excel_mgr.load_settings_list("garment_type", self.default_garments)
         self.employee_roles = self.excel_mgr.load_settings_list("employee_role", self.default_roles)
+        
+        # Clear memory cache periodically
+        gc.collect()
 
     def auto_refresh_loop(self):
         self.reload_all_data()
@@ -368,6 +392,15 @@ class AtelierERPApp(tk.Tk):
         self.btn_cust_delete = tk.Button(hdr, text="Delete", bg=DANGER, fg="white", font=(FONT_FAMILY, 9, "bold"), bd=0, padx=12, pady=6, cursor="hand2", command=self.delete_selected_customer)
         self.btn_cust_delete.pack(side=tk.RIGHT, padx=4)
 
+        # ADD SEARCH BAR FOR CUSTOMER FILTERING
+        search_frame = tk.Frame(sec, bg=self.colors["bg_card"])
+        search_frame.pack(fill=tk.X, padx=24, pady=(12, 8))
+        tk.Label(search_frame, text="🔍 Search:", font=(FONT_FAMILY, 9, "bold"), bg=self.colors["bg_card"], fg=self.colors["text_main"]).pack(side=tk.LEFT, padx=(0, 8))
+        self.ent_cust_search = tk.Entry(search_frame, font=(FONT_FAMILY, 10), width=30)
+        self.ent_cust_search.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
+        self.ent_cust_search.bind("<KeyRelease>", self.filter_customers)
+        tk.Button(search_frame, text="Clear", bg=self.colors["bg_body"], fg=self.colors["text_main"], font=(FONT_FAMILY, 9), bd=0, padx=8, pady=4, cursor="hand2", command=self.clear_customer_search).pack(side=tk.LEFT)
+
         table_frame = tk.Frame(sec, bg=self.colors["bg_card"])
         table_frame.pack(fill=tk.BOTH, expand=True, padx=24, pady=20)
 
@@ -376,6 +409,9 @@ class AtelierERPApp(tk.Tk):
             self.tree_customers.heading(c, text=c.upper())
             self.tree_customers.column(c, width=75)
         self.tree_customers.pack(fill=tk.BOTH, expand=True)
+        
+        # Store original customer data for filtering
+        self._customer_filter_data = []
 
     # ==========================================
     # ORDER CARD SECTION  (digital JTQ paper slip)
@@ -871,6 +907,37 @@ class AtelierERPApp(tk.Tk):
             return
         self.generate_order_pdf(clean_val(order.get("id")))
 
+    def filter_customers(self, event=None):
+        """Filter customer tree by search query (name, phone, id)."""
+        search_query = self.ent_cust_search.get().strip().lower()
+        
+        # Clear tree
+        self.tree_customers.delete(*self.tree_customers.get_children())
+        
+        # Filter and display matching customers
+        if not search_query:
+            # Show all customers if search is empty
+            for c in self.customers:
+                if c.get("id"):
+                    row_values = [clean_val(c.get(h, "")) for h in self.cust_headers]
+                    self.tree_customers.insert("", tk.END, values=row_values)
+        else:
+            # Show only matching customers
+            for c in self.customers:
+                if c.get("id"):
+                    name = clean_val(c.get("name", "")).lower()
+                    phone = clean_val(c.get("phone", "")).lower()
+                    cust_id = clean_val(c.get("id", "")).lower()
+                    
+                    if search_query in name or search_query in phone or search_query in cust_id:
+                        row_values = [clean_val(c.get(h, "")) for h in self.cust_headers]
+                        self.tree_customers.insert("", tk.END, values=row_values)
+
+    def clear_customer_search(self):
+        """Clear search field and show all customers."""
+        self.ent_cust_search.delete(0, tk.END)
+        self.filter_customers()
+
     def edit_selected_employee(self):
         if not self._require_admin():
             return
@@ -1045,12 +1112,20 @@ class AtelierERPApp(tk.Tk):
         self.tree_customers.delete(*self.tree_customers.get_children())
         for c in self.customers:
             if c.get("id"):
-                self.tree_customers.insert("", tk.END, values=list(c.values()))
+                # Ensure values are in the correct column order (FIX FOR ORDER PICKING ISSUE)
+                row_values = [clean_val(c.get(h, "")) for h in self.cust_headers]
+                self.tree_customers.insert("", tk.END, values=row_values)
+        
+        # Reset search filter
+        if hasattr(self, 'ent_cust_search'):
+            self.ent_cust_search.delete(0, tk.END)
 
         self.tree_employees.delete(*self.tree_employees.get_children())
         for e in self.employees:
             if e.get("id"):
-                self.tree_employees.insert("", tk.END, values=list(e.values()))
+                # Ensure values are in the correct column order
+                row_values = [clean_val(e.get(h, "")) for h in self.emp_headers]
+                self.tree_employees.insert("", tk.END, values=row_values)
 
     def update_clock(self):
         self.lbl_clock.configure(text=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
