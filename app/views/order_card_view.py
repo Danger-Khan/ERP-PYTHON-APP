@@ -22,6 +22,7 @@ except ImportError:
 
 class ChipGroup:
     """Single-select segmented button group (radio behavior)."""
+    __slots__ = ('colors', 'accent', 'font', 'value', 'buttons')
 
     def __init__(self, parent, options, colors, font, accent, font_size=9):
         self.colors = colors
@@ -64,6 +65,7 @@ class ChipGroup:
 
 class ChipCheckGroup:
     """Multi-select toggle chip group (checkbox behavior)."""
+    __slots__ = ('colors', 'accent', 'font', 'vars', 'buttons')
 
     def __init__(self, parent, options, colors, font, accent, font_size=9):
         self.colors = colors
@@ -104,6 +106,7 @@ class ChipCheckGroup:
 
 class ScrollableCardSection(tk.Frame):
     """Vertical scroll container with a styled inner frame."""
+    __slots__ = ('colors', 'canvas', 'scrollbar', 'inner', '_window_id')
 
     def __init__(self, parent, colors):
         super().__init__(parent, bg=colors["bg_body"])
@@ -139,6 +142,13 @@ class ScrollableCardSection(tk.Frame):
 
 class OrderCardView(tk.Frame):
     """Full order-card form screen, mounted into the ERP main content area."""
+    __slots__ = ('app', 'colors', 'font', 'primary', 'success', 'warning', 'danger',
+                 'lbl_title', 'lbl_sub', 'cbo_customer', 'ent_customer_id', 'ent_name', 
+                 'ent_phone', 'ent_date', 'ent_address', 'ent_tailor', 'cbo_status',
+                 'garment_group', 'meas_entries', 'style_groups', 'txt_notes',
+                 'ent_delivery_date', 'ent_delivery_time', 'ent_delivered_by',
+                 'cbo_delivery_status', 'ent_total', 'ent_advance', 'lbl_remaining',
+                 'btn_save_order', 'btn_print', 'btn_clear')
 
     def __init__(self, parent, app, colors, font_family, primary, success, warning, danger):
         super().__init__(parent, bg=colors["bg_body"])

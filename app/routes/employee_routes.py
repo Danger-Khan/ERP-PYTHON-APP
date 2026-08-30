@@ -69,3 +69,15 @@ def assign_task():
     log_event("TASK_ASSIGNED", f"Assigned task to {emp.get('name')}: {task_desc}", user=session.get('username'))
 
     return jsonify({"message": "Task assigned successfully", "employee_id": emp_id}), 200
+
+@employee_bp.route('/<employee_id>', methods=['DELETE'])
+@requires_auth
+@requires_role('Administrator')
+def delete_employee(employee_id):
+    try:
+        if not db.delete_record(employee_id):
+            return jsonify({"error": "Employee not found"}), 404
+        log_event("EMP_DELETE", f"Deleted employee {employee_id}", user=session.get('username'))
+        return jsonify({"message": "Employee deleted", "id": employee_id}), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to delete employee: {str(e)}"}), 500

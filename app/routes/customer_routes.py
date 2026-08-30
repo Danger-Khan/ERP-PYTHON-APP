@@ -30,7 +30,7 @@ def get_customers():
 
 @customer_bp.route('/', methods=['POST'])
 @requires_auth
-@requires_role('Admin', 'Manager', 'Tailor')
+@requires_role('Administrator', 'Manager', 'Tailor')
 def save_customer():
     data = request.json
     
@@ -43,3 +43,14 @@ def save_customer():
         return jsonify({"message": "Customer saved successfully", "customer": data}), 201
     except Exception as e:
         return jsonify({"error": f"Failed to save: {str(e)}"}), 500
+
+@customer_bp.route('/<customer_id>', methods=['DELETE'])
+@requires_auth
+@requires_role('Administrator')
+def delete_customer(customer_id):
+    try:
+        if not db.delete_record(customer_id):
+            return jsonify({"error": "Customer not found"}), 404
+        return jsonify({"message": "Customer deleted", "id": customer_id}), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to delete customer: {str(e)}"}), 500

@@ -70,6 +70,25 @@ class ExcelDB:
 
             wb.save(self.filepath)
 
+    def delete_record(self, record_id, id_field: str = 'id') -> bool:
+        """Delete one record by id, retaining the workbook schema and backup."""
+        if not os.path.exists(self.filepath):
+            return False
+        with FileLock(self.lockpath):
+            self._backup()
+            wb = openpyxl.load_workbook(self.filepath)
+            sheet = wb.active
+            headers = [str(cell.value) for cell in sheet[1]]
+            if id_field not in headers:
+                return False
+            id_col = headers.index(id_field) + 1
+            for row_idx in range(2, sheet.max_row + 1):
+                if str(sheet.cell(row_idx, id_col).value) == str(record_id):
+                    sheet.delete_rows(row_idx, 1)
+                    wb.save(self.filepath)
+                    return True
+            return False
+
 def initialize_database():
     """Generates default tables if they don't exist."""
     required_tables = ['users', 'customers', 'orders', 'employees', 'inventory']
