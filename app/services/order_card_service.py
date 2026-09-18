@@ -52,7 +52,7 @@ CUST_HEADERS = [
 ]
 
 ORD_HEADERS = [
-    "id", "customer", "garment", "status", "tailor", "collar_style", "cuff_style",
+    "id", "customer_id", "garment", "status", "tailor", "collar_style", "cuff_style",
     "pocket_style", "daman_style", "stitching", "button_style",
     # new order-card fields
     "order_date", "delivery_date", "delivery_time", "delivered_by",
@@ -176,14 +176,18 @@ def customer_row(form, customer_id):
 
 
 def order_row(form, order_id, customer_id, customer_name):
-    """Builds an orders.xlsx row dict from the form."""
+    """Builds an orders.xlsx row dict from the form.
+    Orders store a reference to a customer by ID (customer_id) instead of
+    duplicating customer contact or measurement data. The customer_name is
+    still accepted for convenience but not persisted into the order row.
+    """
     total = clean_num(form.get("total"))
     advance = clean_num(form.get("advance"))
     garments = ", ".join(g for g in (form.get("garments") or []) if str(g).strip())
     styles = gather_styles(form)
     return {
         "id": order_id,
-        "customer": customer_name,
+        "customer_id": customer_id,
         "garment": garments or "Kameez",
         "status": str(form.get("status") or "Pending"),
         "tailor": str(form.get("tailor") or "").strip(),

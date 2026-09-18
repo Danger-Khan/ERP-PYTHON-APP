@@ -31,7 +31,9 @@ class ExistingCustomerOrderTestCase(unittest.TestCase):
 
         self.assertEqual((customer_id, order_id), ("C-101", "ORD-101"))
         self.assertNotIn("customers.xlsx", self.manager.written)
-        self.assertEqual(self.manager.written["orders.xlsx"]["rows"][0][1], "Ayesha Khan")
+        # orders.xlsx stores a customer_id reference (column index 1), not the
+        # customer's name, to avoid duplicating customer data into every order row.
+        self.assertEqual(self.manager.written["orders.xlsx"]["rows"][0][1], "C-101")
         self.assertIn("measurements.xlsx", self.manager.written)
         self.assertIn("styles.xlsx", self.manager.written)
 

@@ -65,6 +65,21 @@ def run_gui_smoke_test():
         temp_mgr.append_record("orders.xlsx", app.ord_headers,
                                ["ORD-101", "Test Customer", "Shalwar Kameez", "In Progress", "Tailor One",
                                 "Half Ban", "Round Cuff", "Side Pocket", "Square Daman", "1. Single Stitch", "Baz Button"])
+        # Second order, fully populated (incl. finance columns) and already
+        # Delivered with an unpaid balance -- exercises the finance ledger's
+        # "debt" bucket (delivered + unpaid) distinctly from "remaining".
+        temp_mgr.append_record("orders.xlsx", app.ord_headers,
+                               ["ORD-102", "C-101", "Waistcoat", "Delivered", "Tailor One",
+                                "Chinese", "Round Cuff", "One", "Square Daman", "1. Single Stitch", "Karh Button",
+                                "2026-01-01", "2026-01-05", "17:00", "Tailor One",
+                                "Delivered", "", "5000.00", "2000.00", "3000.00"])
+        # Third order, fully paid (total == advance, remaining 0, not
+        # delivered) -- exercises the finance ledger's "Done" tab distinctly
+        # from "Due" (ORD-102) and plain "All" (ORD-101, no total/advance).
+        temp_mgr.append_record("orders.xlsx", app.ord_headers,
+                               ["ORD-103", "C-101", "Pant", "Ready", "Tailor One",
+                                "Normal", "Normal", "One", "Normal", "1. Single Stitch", "Normal",
+                                "2026-01-02", "2026-01-08", "", "", "Not Delivered", "", "2000.00", "2000.00", "0.00"])
         temp_mgr.append_record("employees.xlsx", app.emp_headers,
                                ["E-1", "Tailor One", "0300", "Master Cutter", "On Duty", ""])
 
@@ -73,12 +88,12 @@ def run_gui_smoke_test():
         app.authenticate()
         app.update()
         check("login -> dashboard builds", hasattr(app, "tree_orders") and app.tree_orders.winfo_exists())
-        check("seeded orders shown", len(app.tree_orders.get_children()) == 1)
+        check("seeded orders shown", len(app.tree_orders.get_children()) == 3)
         check("seeded customers shown", len(app.tree_customers.get_children()) == 1)
         check("seeded employees shown", len(app.tree_employees.get_children()) == 1)
 
         # --- Section navigation ---
-        for key in ["customer", "employee", "admin", "dashboard"]:
+        for key in ["customer", "employee", "finance", "admin", "dashboard"]:
             app.show_section(key)
             app.update()
             check(f"section '{key}' visible", bool(app.sections[key].winfo_viewable()))
@@ -89,11 +104,14 @@ def run_gui_smoke_test():
         app.cbo_theme.set("Dark Mode \u263e")
         app.change_theme()
         app.update()
-        check("dark theme applied", app.current_theme == "dark" and app.colors["bg_body"] == "#121212")
+        # Compares against THEMES directly rather than a hardcoded hex value,
+        # so retuning the palette (e.g. the soft-glass colors) never stales
+        # this test out.
+        check("dark theme applied", app.current_theme == "dark" and app.colors["bg_body"] == gui.THEMES["dark"]["bg_body"])
         app.cbo_theme.set("Light Mode \u2600\ufe0f")
         app.change_theme()
         app.update()
-        check("light theme restored", app.current_theme == "light" and app.colors["bg_body"] == "#F5F5F7")
+        check("light theme restored", app.current_theme == "light" and app.colors["bg_body"] == gui.THEMES["light"]["bg_body"])
 
         # --- Language switch ---
         app.show_section("admin")
@@ -105,7 +123,7 @@ def run_gui_smoke_test():
         app.cbo_lang.set("English \U0001F1EC\U0001F1E7")
         app.on_language_change(None)
         app.update()
-        check("english nav restored", app.nav_buttons["dashboard"][0].cget("text") == "Dashboard")
+        check("english nav restored", "Dashboard" in app.nav_buttons["dashboard"][0].cget("text"))
 
         # --- Modals open without error (grab may fail on unmapped windows; tolerated) ---
         def open_and_destroy(method, name):
@@ -152,6 +170,61 @@ def run_gui_smoke_test():
         app.update_employee_task("E-1", "Cut ORD-101")
         persisted_emp = temp_mgr.read_records("employees.xlsx", app.emp_headers)
         check("task assignment persisted", any(gui.clean_val(e.get("id")) == "E-1" and gui.clean_val(e.get("current_task")) == "Cut ORD-101" for e in persisted_emp))
+
+        # --- Finance ledger (SQLite): paid/remaining/debt computed from the
+        # two seeded orders. ORD-101 has no total/advance -> contributes 0
+        # everywhere. ORD-102 is Delivered with total 5000/advance 2000, so
+        # its 3000 balance must land in "debt" (delivered+unpaid), not
+        # "remaining" (which is reserved for undelivered orders).
+        app.show_section("finance")
+        app.update()
+        check("finance section visible", bool(app.sections["finance"].winfo_viewable()))
+        totals = app._finance_db_for_current_data().get_totals()
+        check("finance total paid correct", totals["paid"] == 4000.0)
+        check("finance total debt correct (delivered+unpaid)", totals["debt"] == 3000.0)
+        check("finance total remaining correct (excludes delivered)", totals["remaining"] == 0.0)
+
+        # --- Finance tabs: All / Done / Due filter the ledger table ---
+        app.set_finance_tab("all")
+        app.update()
+        check("finance 'all' tab shows every order", len(app.tree_finance.get_children()) == 3)
+        app.set_finance_tab("done")
+        app.update()
+        check("finance 'done' tab shows only fully-paid orders", len(app.tree_finance.get_children()) == 1)
+        app.set_finance_tab("due")
+        app.update()
+        check("finance 'due' tab shows only orders with a balance", len(app.tree_finance.get_children()) == 1)
+
+        # --- Add Payment tab: pay down ORD-102's remaining debt ---
+        app.set_finance_tab("add")
+        app.update()
+        check("add-payment picker lists the due order", "ORD-102" in app.cbo_fin_pay_order.get())
+        app.ent_fin_pay_amount.insert(0, "1000")
+        app.record_finance_payment()
+        app.update()
+        persisted_ord = temp_mgr.read_records("orders.xlsx", app.ord_headers)
+        ord102 = next((o for o in persisted_ord if gui.clean_val(o.get("id")) == "ORD-102"), {})
+        check("payment updated advance on ORD-102", gui.clean_val(ord102.get("advance")) == "3000.00")
+        new_totals = app._finance_db_for_current_data().get_totals()
+        check("finance totals reflect the recorded payment", new_totals["paid"] == 5000.0 and new_totals["debt"] == 2000.0)
+        app.set_finance_tab("all")
+        app.update()
+
+        # --- Settings/session cache: theme, language, and last open section
+        # should have been written to <tmpdir>/cache/app_state_cache.json by
+        # the show_section()/change_theme()/on_language_change() calls above
+        # (all of which happened after excel_mgr was pointed at tmpdir), and
+        # a fresh AppStateCache reading the same path should see them --
+        # this is the mechanism that lets the real app reopen where the
+        # user left off. reload_all_data() also must never have skipped
+        # touching the real app/data dir at any point above.
+        cache_path = os.path.join(tmpdir, "cache", "app_state_cache.json")
+        check("session cache file written to the active data dir", os.path.exists(cache_path))
+        saved_state = gui.AppStateCache(tmpdir).load()
+        check("session cache remembers last open section", saved_state["last_section"] == "finance")
+        check("session cache remembers theme", saved_state["theme"] == "light")
+        check("session cache remembers language", saved_state["lang"] == "en")
+        check("session cache round-trips via a fresh instance", gui.AppStateCache(tmpdir).load() == saved_state)
 
         # --- PDF generation (if reportlab available) ---
         if SKIP_PDF:

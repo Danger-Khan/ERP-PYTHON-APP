@@ -1,6 +1,7 @@
 import os
 import logging
 from datetime import datetime
+from typing import List
 from config import Config
 
 LOG_FILE = os.path.join(Config.DATA_DIR, "system_audit.log")
