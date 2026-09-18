@@ -5,7 +5,8 @@ class OrderModel:
     def __init__(self, id=None, invoice_number=None, customer_id=None, customer_name="",
                  garment_type="", price=0.0, advance_payment=0.0, discount=0.0,
                  remaining_balance=None, order_date=None, delivery_date=None,
-                 status="Pending", assigned_tailor=""):
+                 status="Pending", assigned_tailor="", priority="Normal",
+                 measurements_snapshot="", notes=""):
         self.id = id
         self.invoice_number = invoice_number
         self.customer_id = customer_id
@@ -14,7 +15,7 @@ class OrderModel:
         self.price = float(price)
         self.advance_payment = float(advance_payment)
         self.discount = float(discount)
-        
+
         # Automatically calculate balance if not provided
         if remaining_balance is None:
             self.remaining_balance = max(0.0, (self.price - self.discount) - self.advance_payment)
@@ -25,6 +26,9 @@ class OrderModel:
         self.delivery_date = delivery_date or datetime.now().strftime("%Y-%m-%d")
         self.status = status
         self.assigned_tailor = assigned_tailor
+        self.priority = priority
+        self.measurements_snapshot = measurements_snapshot
+        self.notes = notes
 
     def to_dict(self) -> dict:
         return {
@@ -40,7 +44,10 @@ class OrderModel:
             "order_date": self.order_date,
             "delivery_date": self.delivery_date,
             "status": self.status,
-            "assigned_tailor": self.assigned_tailor
+            "assigned_tailor": self.assigned_tailor,
+            "priority": self.priority,
+            "measurements_snapshot": self.measurements_snapshot,
+            "notes": self.notes
         }
 
 
@@ -71,22 +78,31 @@ class CustomerModel:
 
 class InventoryItemModel:
     """Data model for fabric and item inventory."""
-    def __init__(self, id=None, item_name="", stock_quantity=0.0, min_stock_alert=10.0, unit="Meters", category="Fabric"):
+    def __init__(self, id=None, item_code=None, item_name="", stock_quantity=0.0, min_stock_alert=10.0,
+                 unit="Meters", category="Fabric", unit_cost=0.0, selling_price=0.0, supplier=""):
         self.id = id
+        self.item_code = item_code or id
         self.item_name = item_name
         self.stock_quantity = float(stock_quantity)
         self.min_stock_alert = float(min_stock_alert)
         self.unit = unit
         self.category = category
+        self.unit_cost = float(unit_cost)
+        self.selling_price = float(selling_price)
+        self.supplier = supplier
 
     def to_dict(self) -> dict:
         return {
             "id": self.id,
+            "item_code": self.item_code,
             "item_name": self.item_name,
             "stock_quantity": self.stock_quantity,
             "min_stock_alert": self.min_stock_alert,
             "unit": self.unit,
-            "category": self.category
+            "category": self.category,
+            "unit_cost": self.unit_cost,
+            "selling_price": self.selling_price,
+            "supplier": self.supplier
         }
 
 # Alias for compatibility
@@ -95,12 +111,17 @@ InventoryModel = InventoryItemModel
 
 class EmployeeModel:
     """Data model for shop tailors and staff."""
-    def __init__(self, id=None, name="", role="Tailor", status="On Duty", phone=""):
+    def __init__(self, id=None, name="", role="Tailor", status="On Duty", phone="",
+                 salary=0.0, cnic="", current_task="None", specialization="General"):
         self.id = id
         self.name = name
         self.role = role
         self.status = status
         self.phone = phone
+        self.salary = float(salary)
+        self.cnic = cnic
+        self.current_task = current_task
+        self.specialization = specialization
 
     def to_dict(self) -> dict:
         return {
@@ -108,5 +129,9 @@ class EmployeeModel:
             "name": self.name,
             "role": self.role,
             "status": self.status,
-            "phone": self.phone
+            "phone": self.phone,
+            "salary": self.salary,
+            "cnic": self.cnic,
+            "current_task": self.current_task,
+            "specialization": self.specialization
         }

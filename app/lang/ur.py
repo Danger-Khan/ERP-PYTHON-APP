@@ -1,0 +1,272 @@
+ORDER_CARD = ("نیا گاہک", "آرڈر کارڈ — کاغذی سلیپ کی ڈیجیٹل شکل")
+
+TRANSLATIONS = {
+    "nav_dash": "📊 ڈیش بورڈ",
+    "nav_cust": "👥 گاہک",
+    "nav_order_card": "📝 آرڈر کارڈ",
+    "nav_emp": "👷 ملازمین",
+    "nav_admin": "⚙️ سیٹنگز",
+    "dash_title": "ڈیش بورڈ",
+    "dash_sub": "ٹیلرنگ کے کام کا براہِ راست جائزہ",
+    "work_done": "✅ مکمل شدہ",
+    "in_prog": "⏳ زیرِ عمل",
+    "work_rem": "⏰ باقی",
+    "active_ledger": "فعال آرڈرز لیجر",
+    "cust_title": "گاہک مرکز",
+    "cust_sub": "گاہک پروفائلز اور پیمائشیں مدیریت کریں",
+    "emp_title": "عملہ اور درزی",
+    "emp_sub": "عملہ، کردار اور روزانہ کے کام مدیریت کریں",
+    "admin_title": "سیٹنگز",
+    "admin_sub": "تھیم، زبان، ملبوسات اور عملے کے کردار",
+    "language_label": "🌐 زبان / Language",
+    "theme_label": "🛠️ سسٹم تھیم",
+
+    # --- Header action buttons + Dashboard ledger table (previously
+    # unwired for Urdu -- fell back to English; now translated) ---
+    "btn_add_cust": "➕ گاہک شامل کریں",
+    "btn_new_card": "🖨️ نیا آرڈر",
+    "btn_assign_task": "🛠️ کام تفویض کریں",
+    "btn_add_emp": "➕ عملہ شامل کریں",
+    "tbl_ord_id": "آئی ڈی",
+    "tbl_cust": "گاہک",
+    "tbl_garment": "ملبوسات",
+    "tbl_status": "حالت",
+    "tbl_tailor": "درزی",
+
+    # --- Customer section: header action buttons ---
+    "cust_btn_edit": "✏️ ترمیم",
+    "cust_btn_delete": "🗑️ حذف کریں",
+    "cust_btn_receipt": "🧾 تازہ ترین رسید پرنٹ کریں",
+
+    # --- Settings: Garment Types / Employee Roles cards ---
+    "admin_card_garments": "🧵 ملبوسات کی اقسام",
+    "admin_card_roles": "👔 ملازمین کے کردار",
+    "btn_item_add": "➕ شامل کریں",
+    "btn_item_remove": "✖ حذف کریں",
+
+    # --- Order Card: section headers ---
+    "oc_sec_customer": "👤 گاہک کی معلومات",
+    "oc_sec_garment": "👕 ملبوسات کی قسم  (ایک یا زیادہ منتخب کریں)",
+    "oc_sec_style": "🎨 اسٹائل کے اختیارات",
+    "oc_sec_notes": "📝 خصوصی نوٹس",
+    "oc_sec_delivery": "🚚 ترسیل",
+    "oc_sec_payment": "💳 ادائیگی",
+
+    # --- Order Card: field labels ---
+    "oc_lbl_registered_customer": "رجسٹرڈ گاہک *",
+    "oc_lbl_customer_id": "گاہک آئی ڈی",
+    "oc_lbl_name": "نام",
+    "oc_lbl_mobile": "موبائل نمبر",
+    "oc_lbl_date": "تاریخ",
+    "oc_lbl_address": "پتہ",
+    "oc_lbl_tailor": "درزی مقرر کریں",
+    "oc_lbl_order_status": "آرڈر کی حالت:",
+    "oc_lbl_delivery_date": "ترسیل کی تاریخ",
+    "oc_lbl_delivery_time": "ترسیل کا وقت",
+    "oc_lbl_delivered_by": "ترسیل کنندہ",
+    "oc_lbl_delivery_status": "ترسیل کی حالت:",
+    "oc_lbl_total": "کل رقم (PKR):",
+    "oc_lbl_advance": "پیشگی ادائیگی (PKR):",
+    "oc_lbl_remaining": "باقی رقم:",
+
+    # --- Order Card: action buttons ---
+    "oc_btn_save": "💾 آرڈر محفوظ کریں",
+    "oc_btn_print": "🧾 رسید پرنٹ کریں",
+    "oc_btn_clear": "🧹 فارم صاف کریں",
+
+    # --- New Customer modal (main_gui.open_add_customer_modal) ---
+    "nc_title": "📋 پیمائشیں درج کریں",
+    "nc_heading": "📏 گاہک پروفائل اور پیمائشیں",
+    "nc_name": "نام:",
+    "nc_phone": "فون:",
+    "nc_address": "پتہ:",
+    "nc_measurements_frame": " 9 بنیادی پیمائشیں (انچ) ",
+    "nc_save": "💾 گاہک محفوظ کریں",
+
+    # --- Employee section: header buttons + table ---
+    "emp_btn_print": "🧾 ٹاسک سلپ پرنٹ کریں",
+    "emp_btn_edit": "✏️ ترمیم",
+    "emp_btn_delete": "🗑️ حذف کریں",
+    "tbl_emp_id": "آئی ڈی",
+    "tbl_emp_name": "نام",
+    "tbl_emp_phone": "فون",
+    "tbl_emp_role": "کردار",
+    "tbl_emp_status": "حالت",
+    "tbl_emp_task": "موجودہ کام",
+
+    # --- Add Staff modal ---
+    "emp_modal_title": "➕ عملہ شامل کریں",
+    "emp_modal_heading": "📋 عملے کا اندراج",
+    "emp_lbl_full_name": "مکمل نام:",
+    "emp_lbl_phone": "فون:",
+    "emp_lbl_role": "کردار:",
+    "emp_btn_save_staff": "💾 عملہ محفوظ کریں",
+
+    # --- Assign Task modal ---
+    "task_modal_title": "🛠️ کام تفویض کریں",
+    "task_modal_heading": "🛠️ روزانہ کام تفویض کریں",
+    "task_lbl_staff_member": "عملہ:",
+    "task_lbl_no_staff": "ابھی تک کوئی عملہ رجسٹرڈ نہیں۔",
+    "task_lbl_order": "آرڈر:",
+    "task_lbl_no_orders": "تفویض کرنے کے لیے کوئی کھلا آرڈر نہیں۔",
+    "task_lbl_task_note": "کام کا نوٹ:",
+    "task_details_garment": "ملبوسات",
+    "task_details_status": "حالت",
+    "task_details_order_date": "آرڈر کی تاریخ",
+    "task_details_delivery_date": "ترسیل کی تاریخ",
+    "task_details_tailor": "فی الحال مقرر",
+    "task_details_total": "کل رقم",
+    "task_details_advance": "پیشگی رقم",
+    "task_details_remaining": "باقی رقم",
+    "task_btn_assign": "✅ کام تفویض کریں",
+
+    # --- Edit Staff Member modal ---
+    "emp_edit_title": "✏️ عملہ میں ترمیم کریں",
+    "emp_edit_lbl_name": "نام",
+    "emp_edit_lbl_phone": "فون",
+    "emp_edit_lbl_role": "کردار",
+    "emp_edit_lbl_status": "حالت",
+    "emp_edit_lbl_task": "موجودہ کام",
+    "btn_save_changes": "💾 تبدیلیاں محفوظ کریں",
+
+    # --- Garment options (order_card_service.GARMENT_OPTIONS) ---
+    "garment_kameez": "قمیض",
+    "garment_shalwar": "شلوار",
+    "garment_coat": "کوٹ",
+    "garment_waistcoat": "واسکٹ",
+    "garment_pant": "پتلون",
+    "garment_shirt": "شرٹ",
+    "garment_others": "دیگر",
+
+    # --- Measurement field labels (order_card_service.MEASUREMENT_FIELDS) ---
+    "meas_lambai": "لمبائی",
+    "meas_chest": "چھاتی",
+    "meas_waist": "کمر",
+    "meas_hip": "کولہا",
+    "meas_shoulder": "کندھا",
+    "meas_sleeve": "آستین",
+    "meas_collar": "کالر",
+    "meas_cuff": "کف",
+    "meas_armhole": "بغل کا گھیرا",
+    "meas_tera": "تیرا",
+    "meas_pocket": "جیب",
+    "meas_shalwar_length": "شلوار کی لمبائی",
+    "meas_bottom": "پائنچے کا نچلا حصہ",
+    "meas_paancha": "پانچہ",
+    "meas_daman": "دامن",
+
+    # --- Style group labels + options (order_card_service.STYLE_GROUPS) ---
+    "style_normal": "عام",
+    "style_none": "کوئی نہیں",
+
+    "style_button_style_label": "بٹن اسٹائل",
+    "style_button_baz": "باز بٹن",
+    "style_button_karh": "کڑھائی بٹن",
+
+    "style_collar_type_label": "کالر کی قسم",
+    "style_collar_chinese": "چائنیز",
+    "style_collar_sherwani": "شیروانی",
+    "style_collar_round": "گول",
+
+    "style_cuff_type_label": "کف کی قسم",
+    "style_cuff_round": "گول کف",
+    "style_cuff_square": "چوکور کف",
+
+    "style_pocket_type_label": "جیب کی قسم",
+    "style_pocket_one": "ایک",
+    "style_pocket_two": "دو",
+    "style_pocket_hidden": "پوشیدہ",
+
+    "style_daman_type_label": "دامن کی قسم",
+    "style_daman_square": "چوکور دامن",
+    "style_daman_round": "گول دامن",
+
+    "style_stitching_label": "سلائی",
+    "style_stitch_single": "1. سنگل سلائی",
+    "style_stitch_double": "2. ڈبل سلائی",
+    "style_stitch_choka": "3. چوکا سلائی",
+    "style_stitch_triple": "4. ٹرپل سلائی",
+
+    "style_sleeve_style_label": "آستین کا انداز",
+    "style_sleeve_full": "پوری",
+    "style_sleeve_half": "آدھی",
+    "style_sleeve_short": "چھوٹی",
+
+    "style_shalwar_style_label": "شلوار کا انداز",
+    "style_shalwar_churidar": "چوڑی دار",
+    "style_shalwar_patiala": "پٹیالہ",
+    "style_shalwar_simple": "سادہ",
+
+    # --- Order / delivery statuses ---
+    "status_pending": "زیرِ التوا",
+    "status_in_progress": "زیرِ عمل",
+    "status_ready": "تیار",
+    "status_delivered": "ترسیل شدہ",
+    "status_not_delivered": "ترسیل نہیں ہوئی",
+    "status_partial": "جزوی",
+
+    # --- Finance: nav + Dashboard mini summary card ---
+    "nav_finance": "💰 مالیات",
+    "dash_fin_title": "مالی جائزہ",
+    "dash_fin_paid": "💵 کل ادا شدہ",
+    "dash_fin_remaining": "⏳ کل باقی رقم",
+    "dash_fin_debt": "⚠️ کل قرض",
+
+    # --- Finance view ---
+    "fin_title": "مالیات",
+    "fin_sub": "تمام آرڈرز کی ادا شدہ، باقی اور قرض کی رقم",
+    "fin_card_paid": "💵 کل ادا شدہ رقم",
+    "fin_card_remaining": "⏳ کل باقی رقم",
+    "fin_card_debt": "⚠️ کل قرض (ترسیل شدہ، ادا نہ شدہ)",
+    "fin_tbl_head": "آرڈر مالیاتی لیجر",
+    "fin_tbl_order": "آرڈر آئی ڈی",
+    "fin_tbl_customer": "گاہک",
+    "fin_tbl_garment": "ملبوسات",
+    "fin_tbl_total": "کل رقم",
+    "fin_tbl_paid": "ادا شدہ",
+    "fin_tbl_remaining": "باقی",
+    "fin_tbl_debt": "قرض",
+    "fin_tbl_status": "حالت",
+    "fin_tbl_delivery": "ترسیل",
+
+    # --- Finance view: tabs + Add Payment form ---
+    "fin_tab_all": "تمام",
+    "fin_tab_done": "مکمل",
+    "fin_tab_due": "واجب الادا",
+    "fin_tab_add": "ادائیگی درج کریں",
+    "fin_add_heading": "ادائیگی درج کریں",
+    "fin_add_order": "واجب الادا آرڈر:",
+    "fin_add_amount": "ادائیگی کی رقم (PKR):",
+    "fin_add_submit": "ادائیگی محفوظ کریں",
+
+    # --- Validation error messages (order_card_service.validate) ---
+    "err_name_required": "گاہک کا نام درکار ہے۔",
+    "err_phone_required": "موبائل نمبر درکار ہے۔",
+    "err_phone_digits": "موبائل نمبر میں ہندسے ہونے چاہئیں۔",
+    "err_date_required": "تاریخ درکار ہے۔",
+    "err_advance_exceeds_total": "ادا شدہ رقم کل رقم سے زیادہ نہیں ہو سکتی۔",
+    "err_select_garment": "کم از کم ایک ملبوسات کی قسم منتخب کریں۔",
+    "err_select_customer": "آرڈر محفوظ کرنے سے پہلے موجودہ گاہک منتخب کریں۔",
+
+    # --- Printed / PDF receipt text (build_receipt_text, write_receipt_pdf) ---
+    "receipt_shop_name": "جھگڑا کریئیشن اینڈ فیبرکس",
+    "receipt_tagline": "معیار کا نام - جے ٹی کیو",
+    "receipt_no": "نمبر",
+    "receipt_order_no": "آرڈر نمبر",
+    "receipt_name": "نام",
+    "receipt_customer": "گاہک",
+    "receipt_mobile": "موبائل",
+    "receipt_contact": "رابطہ",
+    "receipt_date": "تاریخ",
+    "receipt_garments": "ملبوسات",
+    "receipt_status": "حالت",
+    "receipt_total": "کل رقم",
+    "receipt_advance": "پیشگی رقم",
+    "receipt_remaining": "باقی رقم",
+    "receipt_button": "بٹن",
+    "receipt_stitch": "سلائی",
+    "receipt_measurements_inches": "پیمائشیں (انچ)",
+    "receipt_selected_styles": "منتخب اسٹائلز",
+    "receipt_payment": "ادائیگی",
+    "receipt_thanks": "شکریہ! وصولی کے وقت رسید ساتھ لائیں۔",
+}
